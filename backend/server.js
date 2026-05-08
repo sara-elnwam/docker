@@ -1,4 +1,3 @@
-
 const express = require('express');
 const { Pool } = require('pg');
 const app = express();
@@ -13,18 +12,20 @@ const pool = new Pool({
 
 // Function to initialize database with Retry Logic
 const initDb = async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS students (
-        id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL
-      )
-    `);
-    console.log("✅ Database initialized successfully.");
-  } catch (err) {
-    // If connection fails (e.g. DB still booting), try again after 5 seconds
-    console.error("❌ DB connection failed. Retrying in 5 seconds...", err.message);
-    setTimeout(initDb, 5000);
+  while (true) {
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS students (
+          id SERIAL PRIMARY KEY,
+          name TEXT NOT NULL
+        )
+      `);
+      console.log("✅ Database initialized successfully.");
+      break;
+    } catch (err) {
+      console.error("❌ DB not ready. Retrying in 3 seconds...", err.message);
+      await new Promise(res => setTimeout(res, 3000));
+    }
   }
 };
 
