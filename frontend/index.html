@@ -2,49 +2,226 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>سجل حضور الطلاب</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الطلاب الذكي</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        input { padding: 10px; width: 70%; margin-bottom: 10px; }
-        button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; }
-        ul { list-style: none; padding: 0; text-align: right; }
-        li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 5px; }
+        /* Modern UI/UX Style */
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+            --edit: #10b981;
+            --edit-bg: #d1fae5;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        button.add-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.add-btn:hover {
+            background-color: var(--primary-hover);
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            background: white;
+            border: 1px solid #f1f5f9;
+            padding: 16px;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .student-name {
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-edit {
+            color: var(--edit);
+            background-color: var(--edit-bg);
+        }
+
+        .btn-edit:hover {
+            background-color: var(--edit);
+            color: white;
+        }
+
+        .btn-delete {
+            color: var(--danger);
+            background-color: var(--danger-bg);
+        }
+
+        .btn-delete:hover {
+            background-color: var(--danger);
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>سجل حضور الطلاب</h2>
-        <input type="text" id="studentName" placeholder="اكتب اسم الطالب هنا...">
-        <button onclick="addStudent()">إضافة</button>
-        <hr>
-        <h3>الطلاب المسجلين:</h3>
+
+    <div class="container">
+        <h2><span>🎓</span> سجل الحضور الذكي</h2>
+        
+        <div class="input-group">
+            <input type="text" id="studentName" placeholder="أدخل اسم الطالب...">
+            <button class="add-btn" onclick="addStudent()">إضافة</button>
+        </div>
+
+        <div style="text-align: right; margin-bottom: 10px; color: #64748b; font-size: 0.9rem;">الطلاب المسجلين:</div>
         <ul id="studentList"></ul>
     </div>
 
     <script>
-        // دالة لجلب وعرض الأسماء
+        // 1. جلب وعرض البيانات (READ)
         async function loadStudents() {
-            const res = await fetch('/api/students');
-            const students = await res.json();
-            const list = document.getElementById('studentList');
-            list.innerHTML = students.map(s => `<li>${s.name}</li>`).join('');
+            try {
+                const res = await fetch('/api/students');
+                const students = await res.json();
+                const list = document.getElementById('studentList');
+                list.innerHTML = students.map(s => `
+                    <li>
+                        <span class="student-name">${s.name}</span>
+                        <div class="actions">
+                            <button class="btn-icon btn-edit" onclick="editStudent(${s.id}, '${s.name}')">تعديل</button>
+                            <button class="btn-icon btn-delete" onclick="deleteStudent(${s.id})">حذف</button>
+                        </div>
+                    </li>
+                `).join('');
+            } catch (err) {
+                console.error("Error loading students:", err);
+            }
         }
 
-        // دالة لإضافة اسم جديد
+        // 2. إضافة طالب جديد (CREATE)
         async function addStudent() {
-            const name = document.getElementById('studentName').value;
+            const input = document.getElementById('studentName');
+            const name = input.value.trim();
             if (!name) return;
+
             await fetch('/api/students', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name })
             });
-            document.getElementById('studentName').value = '';
+
+            input.value = '';
             loadStudents();
         }
 
-        loadStudents(); // تحميل الأسماء أول ما الصفحة تفتح
+        // 3. حذف طالب (DELETE)
+        async function deleteStudent(id) {
+            if (!confirm("هل أنت متأكد من حذف هذا الطالب؟")) return;
+            
+            await fetch(`/api/students/${id}`, { method: 'DELETE' });
+            loadStudents();
+        }
+
+        // 4. تعديل اسم طالب (UPDATE)
+        async function editStudent(id, oldName) {
+            const newName = prompt("تعديل اسم الطالب:", oldName);
+            if (!newName || newName.trim() === oldName) return;
+
+            await fetch(`/api/students/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newName.trim() })
+            });
+            
+            loadStudents();
+        }
+
+        // التحميل الأولي
+        loadStudents();
     </script>
 </body>
 </html>
