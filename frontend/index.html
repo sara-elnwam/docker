@@ -2,41 +2,49 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشروع الـ Full Stack</title>
+    <title>سجل حضور الطلاب</title>
     <style>
-        body { font-family: sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f4; }
-        .container { background: white; padding: 20px; border-radius: 10px; display: inline-block; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #28a745; color: white; border: none; border-radius: 5px; }
-        #response { margin-top: 20px; font-weight: bold; color: #007bff; }
+        body { font-family: sans-serif; text-align: center; background: #f4f4f4; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input { padding: 10px; width: 70%; margin-bottom: 10px; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; cursor: pointer; }
+        ul { list-style: none; padding: 0; text-align: right; }
+        li { background: #eee; margin: 5px 0; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>مشروع الـ Full Stack المعتمد على Docker</h1>
-        <p>اضغط على الزر للتأكد من الربط مع الـ Backend وقاعدة البيانات:</p>
-        
-        <button onclick="fetchData()">اختبار الاتصال</button>
-        
-        <div id="response">في انتظار ضغط الزر...</div>
+    <div class="card">
+        <h2>سجل حضور الطلاب</h2>
+        <input type="text" id="studentName" placeholder="اكتب اسم الطالب هنا...">
+        <button onclick="addStudent()">إضافة</button>
+        <hr>
+        <h3>الطلاب المسجلين:</h3>
+        <ul id="studentList"></ul>
     </div>
 
     <script>
-        async function fetchData() {
-            const responseDiv = document.getElementById('response');
-            responseDiv.innerText = "جاري الاتصال...";
-            
-            try {
-                // بنبعت الطلب للـ Nginx وهو بيوصله للـ Backend
-                const response = await fetch('/api/data');
-                const data = await response.json();
-                responseDiv.innerText = data.message;
-            } catch (error) {
-                responseDiv.innerText = "خطأ في الاتصال! تأكد من تشغيل الـ Containers.";
-                console.error(error);
-            }
+        // دالة لجلب وعرض الأسماء
+        async function loadStudents() {
+            const res = await fetch('/api/students');
+            const students = await res.json();
+            const list = document.getElementById('studentList');
+            list.innerHTML = students.map(s => `<li>${s.name}</li>`).join('');
         }
+
+        // دالة لإضافة اسم جديد
+        async function addStudent() {
+            const name = document.getElementById('studentName').value;
+            if (!name) return;
+            await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            document.getElementById('studentName').value = '';
+            loadStudents();
+        }
+
+        loadStudents(); // تحميل الأسماء أول ما الصفحة تفتح
     </script>
 </body>
 </html>
